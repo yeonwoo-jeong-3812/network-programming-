@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>작성된 필기 목록</title>
+</head>
+<body>
+    <h1>📋 전체 필기 목록</h1>
+
+    <p>
+        <a href="{% url 'note_create' %}">새 필기 작성하기</a> |
+        <a href="{% url 'upload_pdf' %}">PDF 업로드</a>
+    </p>
+
+    <hr>
+    <hr>
+
+    <ul>
+        {% for note in notes %}
+            <li><a href="{% url 'note_detail' note.id %}">{{ note.title }}</a></li>
+        {% empty %}
+            <li>아직 작성된 필기가 없습니다.</li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>

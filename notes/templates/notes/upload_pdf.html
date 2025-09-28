@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF 업로드</title>
+</head>
+<body>
+    <h1>📄 PDF 업로드</h1>
+
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div>
+            <label>제목(선택): </label>
+            <input type="text" name="title" placeholder="노트 제목">
+        </div>
+        <div>
+            <label>PDF 파일: </label>
+            <input type="file" name="pdf" accept="application/pdf" required>
+        </div>
+        <button type="submit">업로드</button>
+    </form>
+
+    <p><a href="{% url 'note_list' %}">← 목록으로</a></p>
+</body>
+</html>

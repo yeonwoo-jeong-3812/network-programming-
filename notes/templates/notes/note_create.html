@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>새 필기 작성</title>
+</head>
+<body>
+    <h1>새로운 수업 필기 제출하기</h1>
+    
+    <form action="" method="post">
+        {% csrf_token %}
+
+        <div>
+            <label for="title">제목:</label>
+            <input type="text" id="title" name="title">
+        </div>
+        <br>
+        <div>
+            <label for="content">내용:</label>
+            <textarea id="content" name="content" rows="15" cols="50"></textarea>
+        </div>
+        <br>
+        <button type="submit">제출하고 요약하기</button>
+    </form>
+
+</body>
+</html>
