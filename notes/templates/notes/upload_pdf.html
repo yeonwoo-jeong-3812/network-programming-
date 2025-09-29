@@ -22,12 +22,16 @@
             <input type="text" name="title" placeholder="노트 제목">
         </div>
         <div>
+            <label>과목: </label>
+            <input type="text" name="subject" placeholder="예: 네트워크 프로그래밍" required>
+        </div>
+        <div>
             <label>PDF 파일: </label>
             <input type="file" name="pdf" accept="application/pdf" required>
         </div>
         <button type="submit">업로드</button>
     </form>
 
-    <p><a href="{% url 'note_list' %}">← 목록으로</a></p>
+    <p><a href="{% url 'subject_list' %}">← 과목 목록으로</a></p>
 </body>
 </html>

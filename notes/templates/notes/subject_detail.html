@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ subject.name }} - 요약 및 노트</title>
+</head>
+<body>
+    <h1>📚 과목: {{ subject.name }}</h1>
+
+    <p>
+        <a href="{% url 'subject_list' %}">← 과목 목록</a>
+    </p>
+
+    <section>
+        <h2>노트 목록</h2>
+        <ul>
+            {% for n in notes %}
+                <li>
+                    <a href="{% url 'note_detail' n.id %}">{{ n.title }}</a>
+                    <small>({{ n.created_at }})</small>
+                </li>
+            {% empty %}
+                <li>해당 과목의 노트가 없습니다.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section>
+        <h2>요약본</h2>
+        <ul>
+            {% for s in summaries %}
+                <li>
+                    <strong>{{ s.note.title }}</strong>
+                    <pre style="white-space: pre-wrap; background:#f8fbff; padding:10px;">{{ s.content }}</pre>
+                    <a href="{% url 'note_detail' s.note.id %}">노트 상세로 이동</a>
+                </li>
+            {% empty %}
+                <li>요약본이 없습니다.</li>
+            {% endfor %}
+        </ul>
+    </section>
+</body>
+</html>

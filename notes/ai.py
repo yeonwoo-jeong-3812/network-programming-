@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from typing import List, Dict
 
 import requests
@@ -91,7 +92,25 @@ def generate_ox_quiz(summary: str, num_questions: int = 5, language: str = "ko")
 
     # Try to parse JSON from the model's output
     try:
-        data = json.loads(content)
+        # 1) 제거: 코드 블록 펜스 ``` 혹은 ```json 래핑
+        cleaned = content.strip()
+        if cleaned.startswith("```"):
+            cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.IGNORECASE)
+            cleaned = re.sub(r"\s*```$", "", cleaned)
+
+        # 2) 내용 중 JSON 배열만 추출 (모델이 여분 텍스트를 섞어 보낼 때 대비)
+        #    가장 바깥쪽 대괄호에 해당하는 부분을 찾아 파싱 시도
+        if not cleaned.strip().startswith("["):
+            first_bracket = cleaned.find("[")
+            last_bracket = cleaned.rfind("]")
+            if first_bracket != -1 and last_bracket != -1 and last_bracket > first_bracket:
+                candidate = cleaned[first_bracket:last_bracket + 1]
+            else:
+                candidate = cleaned
+        else:
+            candidate = cleaned
+
+        data = json.loads(candidate)
         items = []
         for it in data:
             q = str(it.get("question", "")).strip()

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>과목 목록</title>
+</head>
+<body>
+    <h1>📚 과목 목록</h1>
+
+    <p>
+        <a href="{% url 'upload_pdf' %}">PDF 업로드</a> |
+        <a href="{% url 'note_create' %}">새 필기 작성</a>
+    </p>
+
+    <ul>
+        {% for s in subjects %}
+            <li>
+                <a href="{% url 'subject_detail' s.id %}">{{ s.name }}</a>
+            </li>
+        {% empty %}
+            <li>등록된 과목이 없습니다.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

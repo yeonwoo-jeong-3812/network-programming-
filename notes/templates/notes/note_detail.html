@@ -39,17 +39,60 @@
     <section>
         <h2>OX 퀴즈</h2>
         {% if quizzes %}
-            <ol>
-                {% for q in quizzes %}
-                    <li>
-                        <p><strong>문제:</strong> {{ q.question }}</p>
-                        <p><strong>정답:</strong> {{ q.answer|yesno:"O,X" }}</p>
-                        {% if q.explanation %}
-                            <p><strong>해설:</strong> {{ q.explanation }}</p>
+            {% if graded %}
+                <p><strong>점수:</strong> {{ score }}/{{ total }}</p>
+            {% endif %}
+            <form method="post" action="{% url 'grade_quiz' note.id %}">
+                {% csrf_token %}
+                <ol>
+                    {% for q in quizzes %}
+                        {% if graded %}
+                            {% for r in results %}
+                                {% if r.id == q.id %}
+                                    {% with user_ans=r.user_answer %}
+                                    <li style="margin-bottom:10px;">
+                                        <p><strong>문제:</strong> {{ q.question }}</p>
+                                        <label>
+                                            <input type="radio" name="answer_{{ q.id }}" value="o" {% if user_ans is True %}checked{% endif %} disabled>
+                                            O
+                                        </label>
+                                        <label style="margin-left:8px;">
+                                            <input type="radio" name="answer_{{ q.id }}" value="x" {% if user_ans is False %}checked{% endif %} disabled>
+                                            X
+                                        </label>
+                                        <p>
+                                            <strong>결과:</strong>
+                                            {% if r.is_correct %}
+                                                <span style="color:green;">정답</span>
+                                            {% else %}
+                                                <span style="color:red;">오답</span>
+                                                (정답: {{ r.correct_answer|yesno:"O,X" }})
+                                            {% endif %}
+                                        </p>
+                                        {% if r.explanation %}
+                                            <p><strong>해설:</strong> {{ r.explanation }}</p>
+                                        {% endif %}
+                                    </li>
+                                    {% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <li style="margin-bottom:10px;">
+                                <p><strong>문제:</strong> {{ q.question }}</p>
+                                <label>
+                                    <input type="radio" name="answer_{{ q.id }}" value="o"> O
+                                </label>
+                                <label style="margin-left:8px;">
+                                    <input type="radio" name="answer_{{ q.id }}" value="x"> X
+                                </label>
+                            </li>
                         {% endif %}
-                    </li>
-                {% endfor %}
-            </ol>
+                    {% endfor %}
+                </ol>
+                {% if not graded %}
+                    <button type="submit">채점하기</button>
+                {% endif %}
+            </form>
         {% else %}
             <p>아직 퀴즈가 없습니다.</p>
         {% endif %}
@@ -59,6 +102,6 @@
         </form>
     </section>
 
-    <p><a href="{% url 'note_list' %}">← 목록으로</a></p>
+    <p><a href="{% url 'subject_list' %}">← 과목 목록으로</a></p>
 </body>
 </html>

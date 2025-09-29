@@ -45,7 +45,8 @@ def upload_pdf(request):
         try:
             # 임시로 Note를 만들며 파일을 저장하기 위해 author/subject 준비
             author = User.objects.first()
-            subject, _ = Subject.objects.get_or_create(name='네트워크 프로그래밍')
+            subject_name = (request.POST.get('subject') or '').strip() or '네트워크 프로그래밍'
+            subject, _ = Subject.objects.get_or_create(name=subject_name)
 
             note = Note(author=author, subject=subject, title=title)
             note.pdf_file = file
@@ -72,6 +73,24 @@ def note_detail(request, note_id: int):
         'note': note,
         'summary': summary,
         'quizzes': quizzes,
+    })
+
+
+def subject_list(request):
+    subjects = Subject.objects.all().order_by('name')
+    return render(request, 'notes/subject_list.html', {
+        'subjects': subjects,
+    })
+
+
+def subject_detail(request, subject_id: int):
+    subject = get_object_or_404(Subject, id=subject_id)
+    notes = Note.objects.filter(subject=subject).order_by('-created_at')
+    summaries = Summary.objects.filter(note__subject=subject).select_related('note')
+    return render(request, 'notes/subject_detail.html', {
+        'subject': subject,
+        'notes': notes,
+        'summaries': summaries,
     })
 
 
@@ -121,3 +140,56 @@ def generate_quiz(request, note_id: int):
     except Exception as e:
         messages.error(request, f'퀴즈 생성 중 오류: {e}')
     return redirect('note_detail', note_id=note.id)
+
+@require_http_methods(["POST"])
+def grade_quiz(request, note_id: int):
+    note = get_object_or_404(Note, id=note_id)
+    summary = Summary.objects.filter(note=note).first()
+    if not summary:
+        messages.error(request, '먼저 요약을 생성해주세요.')
+        return redirect('note_detail', note_id=note.id)
+
+    quizzes = list(Quiz.objects.filter(summary=summary))
+    if not quizzes:
+        messages.warning(request, '채점할 퀴즈가 없습니다. 먼저 퀴즈를 생성해주세요.')
+        return redirect('note_detail', note_id=note.id)
+
+    results = []
+    correct_count = 0
+    total = len(quizzes)
+
+    for q in quizzes:
+        key = f"answer_{q.id}"
+        raw = request.POST.get(key, "")
+        # 허용 값: "true"/"false"/"O"/"X"
+        if raw.lower() in ("o", "true", "t"):
+            user_answer = True
+        elif raw.lower() in ("x", "false", "f"):
+            user_answer = False
+        else:
+            user_answer = None
+
+        is_correct = (user_answer is not None and user_answer == q.answer)
+        if is_correct:
+            correct_count += 1
+        results.append({
+            "id": q.id,
+            "question": q.question,
+            "correct_answer": q.answer,
+            "user_answer": user_answer,
+            "is_correct": is_correct,
+            "explanation": q.explanation or "",
+        })
+
+    score = correct_count
+    messages.info(request, f'채점 결과: {score}/{total} 문제 정답')
+
+    return render(request, 'notes/note_detail.html', {
+        'note': note,
+        'summary': summary,
+        'quizzes': quizzes,
+        'graded': True,
+        'score': score,
+        'total': total,
+        'results': results,
+    })
